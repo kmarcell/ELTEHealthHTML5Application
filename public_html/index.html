@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>ELTE Health Reports</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+        <style>
+            body {
+              font: 10px sans-serif;
+            }
+
+            .axis path,
+            .axis line {
+              fill: none;
+              stroke: #000;
+              shape-rendering: crispEdges;
+            }
+
+            .x.axis path {
+              display: none;
+            }
+
+            .line {
+              fill: none;
+              stroke: steelblue;
+              stroke-width: 1.5px;
+            }
+            
+            .bar {
+                fill: steelblue;
+            }
+
+            .bar:hover {
+                fill: brown;
+            }
+
+            .axis {
+                font: 10px sans-serif;
+            }
+            
+            diagram {
+                width: 960px;
+                height: 500px;
+            }
+        </style>
+    </head>
+    
+    <body>
+    <div id="diagram"></div>
+    <script src="lineDiagramScript.js"></script>
+    <script src="barDiagramScript.js"></script>
+    <script src="downloadData.js"></script>
+    <script src="sumByDay.js"></script>
+    <script>
+        DownloadData(function(data)
+        {
+           var aggregated  = aggregateData(data, sum, byDay);
+           presentBarDiagram(aggregated , "#diagram", "Step count"); 
+        });
+    </script>
+    </body>
+</html>
