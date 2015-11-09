@@ -9,8 +9,7 @@ function DownloadData(callback)
             var json = JSON.parse(xmlhttp.responseText);
             var data = json.rows;
             data.forEach(function(d) {
-                d.date = parseDate(d.key.substring(0, 22) + "00");
-                d.value = +d.value;
+                d.value.startTime = parseDate(d.value.startTime.substring(0, 22) + "00");
             });
             
             if (typeof callback === "function") {
@@ -19,7 +18,7 @@ function DownloadData(callback)
        }
     };
 
-    xmlhttp.open("GET"," http://ec2-52-29-5-113.eu-central-1.compute.amazonaws.com:5984/labor/_design/stepcount/_view/all", true);
+    xmlhttp.open("GET"," http://ec2-52-29-5-113.eu-central-1.compute.amazonaws.com:5984/labor/_design/sessions/_view/by_user_id", true);
     xmlhttp.setRequestHeader("Accept", "application/json; charset=utf-8");
     xmlhttp.send();
 }

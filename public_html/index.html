@@ -49,17 +49,53 @@
     </head>
     
     <body>
-    <div id="diagram"></div>
     <script src="lineDiagramScript.js"></script>
     <script src="barDiagramScript.js"></script>
     <script src="downloadData.js"></script>
     <script src="sumByDay.js"></script>
+    <script src="filterData.js"></script>
+    
+    <label for="patientName">Patient name: </label>
+    <input list="patients" name="patientName">
+    <datalist id="patients">
+    </datalist>
+    <p/>
+    Property to aggregate:
+    <p/>
+    <input type="radio" name="property" value="steps" checked>steps
+    <br>
+    <input type="radio" name="property" value="calories">calories
+    <br>
+    <input type="radio" name="property" value="distance">distance
+    <p/>
+    
+    <label for="aggregateFunction">Aggregate function: </label>
+    <select>
+        <option value="sum">Sum</option>>
+    </select>
+    
+    <p><b>Note:</b> The datalist tag is not supported in Safari or IE9 (and earlier).</p>
+    <button type="button" id='generateButton'>Generate</button>
+    
+    <div id="diagram"></div>
     <script>
-        DownloadData(function(data)
-        {
-           var aggregated  = aggregateData(data, sum, byDay);
-           presentBarDiagram(aggregated , "#diagram", "Step count"); 
-        });
+        
+        var patients = document.getElementById("patients");
+        var option = document.createElement("option");
+        option.value = "ehealth4";
+        patients.appendChild(option);
+        
+        document.getElementById('generateButton').onclick=function(){
+            var property = document.querySelector('input[name="property"]:checked').value;
+            DownloadData(function(data)
+            {
+                var filtered = filterDataWithUserId(data, "ehealth4");
+                var aggregated  = aggregateData(filtered.map(function(d) {
+                    return {"date": d.startTime, "value": d[property]};
+                }), sum, byDay);
+                presentBarDiagram(aggregated , "#diagram", property); 
+            });
+        };
     </script>
     </body>
 </html>
