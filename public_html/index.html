@@ -61,6 +61,7 @@
     <script src="js/sumByDay.js"></script>
     <script src="js/filterData.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/dates.js"></script>
     
     <!-- Fixed navbar -->
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -73,31 +74,38 @@
     
     <div class="horizontal-space" style="margin-bottom:80px"></div>
     
-    <div id="FilterControls" style="width:420px; margin:0 auto;">
-        <div id="InnerAlignment" align="left">
-            <H3>Patient name</H3>
-            <input list="patients" name="patientName" style="width:100%;">
-            <datalist id="patients">
-            </datalist>
-            <H3>Property to aggregate</H3>
-            <input type="radio" name="property" value="steps" checked> Number of Steps
-            <br>
-            <input type="radio" name="property" value="calories"> Calories burned
-            <br>
-            <input type="radio" name="property" value="distance"> Distance walked
-            <H3>Aggregate function</H3>
-            <p />
-            <select style="width:100%;">
-                <option value="sum">Sum</option>
-            </select>
-            <p />
-            <p><b>Note:</b> The datalist tag is not supported in Safari or IE9 (and earlier).</p>
-            <p />
-            <button type="button" id='generateButton' class="btn btn-sm btn-primary" style="width:100%; height:32px">Generate</button>
+    <div style="width: 100%; overflow: hidden;">
+        <div id="FilterControls" style="width:420px; float:left; margin-left: 40px;">
+            <div id="InnerAlignment" align="left">
+                <H3>Patient name or ID</H3>
+                <input list="patients" name="patientName" style="width:100%;">
+                <datalist id="patients">
+                </datalist>
+                <H3>Start Date</H3>
+                <input type="date" name="startDate" style="width:100%;">
+                <H3>End Date</H3>
+                <input type="date" name="endDate" style="width:100%;">
+                <H3>Property to aggregate</H3>
+                <input type="radio" name="property" value="steps" checked> Number of Steps
+                <br>
+                <input type="radio" name="property" value="calories"> Calories burned
+                <br>
+                <input type="radio" name="property" value="distance"> Distance walked
+                <H3>Aggregate function</H3>
+                <p />
+                <select style="width:100%;">
+                    <option value="sum">Sum</option>
+                </select>
+                <p />
+                <p><b>Note:</b> The datalist tag is not supported in Safari or IE9 (and earlier).</p>
+                <p />
+                <button type="button" id='generateButton' class="btn btn-sm btn-primary" style="width:100%; height:32px">Generate</button>
+            </div>
         </div>
+    
+        <div id="diagram" style="margin-left: 520px;"></div>
     </div>
     
-    <div id="diagram" align="center"></div>
     <script>
         
         var patients = document.getElementById("patients");
@@ -107,12 +115,23 @@
         
         document.getElementById('generateButton').onclick=function(){
             var property = document.querySelector('input[name="property"]:checked').value;
+            var patientName = document.querySelector('input[name="patientName"]').value;
+            var parseDate = d3.time.format("%Y-%m-%d").parse;
+            var startDate = document.querySelector('input[name="startDate"]').value;
+            startDate = startDate === "" ? null : parseDate(startDate);
+            var endDate = document.querySelector('input[name="endDate"]').value;
+            endDate = endDate === "" ? Date.now() : parseDate(endDate);
+            if (patientName === "") {
+                return;
+            }
             DownloadData(function(data)
             {
-                var patientName = document.querySelector('input[name="patientName"]').value;
-                var filtered = filterDataWithUserId(data, patientName);
+                var filtered = data.filter(function(d){
+                   var inRange = (startDate === null || dates.inRange(d.value.startTime, startDate, endDate));
+                   return  d.key === patientName && inRange;
+                });
                 var aggregated  = aggregateData(filtered.map(function(d) {
-                    return {"date": d.startTime, "value": d[property]};
+                    return {"date": d.value.startTime, "value": d.value[property]};
                 }), sum, byDay);
                 var diagramDiv = document.getElementById("diagram");
                 while (diagramDiv.firstChild) {
