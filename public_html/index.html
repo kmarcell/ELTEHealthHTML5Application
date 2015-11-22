@@ -6,7 +6,9 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+        <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
         <style>
             body {
               font: 10px sans-serif;
@@ -45,39 +47,57 @@
                 width: 960px;
                 height: 500px;
             }
+            
+            div.horizontal-space {
+                margin-bottom:40px;
+            }
         </style>
     </head>
     
     <body>
-    <script src="lineDiagramScript.js"></script>
-    <script src="barDiagramScript.js"></script>
-    <script src="downloadData.js"></script>
-    <script src="sumByDay.js"></script>
-    <script src="filterData.js"></script>
+    <script src="js/lineDiagramScript.js"></script>
+    <script src="js/barDiagramScript.js"></script>
+    <script src="js/downloadData.js"></script>
+    <script src="js/sumByDay.js"></script>
+    <script src="js/filterData.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     
-    <label for="patientName">Patient name: </label>
-    <input list="patients" name="patientName">
-    <datalist id="patients">
-    </datalist>
-    <p/>
-    Property to aggregate:
-    <p/>
-    <input type="radio" name="property" value="steps" checked>steps
-    <br>
-    <input type="radio" name="property" value="calories">calories
-    <br>
-    <input type="radio" name="property" value="distance">distance
-    <p/>
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                 <a class="navbar-brand" href="#">ELTE Health</a>
+            </div>
+        </div>
+    </div>
     
-    <label for="aggregateFunction">Aggregate function: </label>
-    <select>
-        <option value="sum">Sum</option>>
-    </select>
+    <div class="horizontal-space" style="margin-bottom:80px"></div>
     
-    <p><b>Note:</b> The datalist tag is not supported in Safari or IE9 (and earlier).</p>
-    <button type="button" id='generateButton'>Generate</button>
+    <div id="FilterControls" style="width:420px; margin:0 auto;">
+        <div id="InnerAlignment" align="left">
+            <H3>Patient name</H3>
+            <input list="patients" name="patientName" style="width:100%;">
+            <datalist id="patients">
+            </datalist>
+            <H3>Property to aggregate</H3>
+            <input type="radio" name="property" value="steps" checked> Number of Steps
+            <br>
+            <input type="radio" name="property" value="calories"> Calories burned
+            <br>
+            <input type="radio" name="property" value="distance"> Distance walked
+            <H3>Aggregate function</H3>
+            <p />
+            <select style="width:100%;">
+                <option value="sum">Sum</option>
+            </select>
+            <p />
+            <p><b>Note:</b> The datalist tag is not supported in Safari or IE9 (and earlier).</p>
+            <p />
+            <button type="button" id='generateButton' class="btn btn-sm btn-primary" style="width:100%; height:32px">Generate</button>
+        </div>
+    </div>
     
-    <div id="diagram"></div>
+    <div id="diagram" align="center"></div>
     <script>
         
         var patients = document.getElementById("patients");
@@ -89,10 +109,15 @@
             var property = document.querySelector('input[name="property"]:checked').value;
             DownloadData(function(data)
             {
-                var filtered = filterDataWithUserId(data, "ehealth4");
+                var patientName = document.querySelector('input[name="patientName"]').value;
+                var filtered = filterDataWithUserId(data, patientName);
                 var aggregated  = aggregateData(filtered.map(function(d) {
                     return {"date": d.startTime, "value": d[property]};
                 }), sum, byDay);
+                var diagramDiv = document.getElementById("diagram");
+                while (diagramDiv.firstChild) {
+                    diagramDiv.removeChild(diagramDiv.firstChild);
+                }
                 presentBarDiagram(aggregated , "#diagram", property); 
             });
         };
